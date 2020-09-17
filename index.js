@@ -8,6 +8,9 @@ app.listen(9000, () => {
   console.log("connected");
 });
 
+app.use(morgan("dev"));
+app.use(express.static(__dirname + "/public"));
+
 app.get("/", (req, res) => {
   console.log(req.headers);
   res.statusCode = 200;
