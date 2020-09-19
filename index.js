@@ -4,6 +4,7 @@ const bodyParser = require("body-parser");
 //routes import
 const dishRoutes = require("./routes/dishRouter");
 const promoRoutes = require("./routes/promoRouter");
+const leaderRoutes = require("./routes/leaderRouter");
 const app = express();
 
 const port = 9000;
@@ -19,3 +20,4 @@ app.use(express.static(__dirname + "/public"));
 //dishes Routes
 dishRoutes(app);
 promoRoutes(app);
+leaderRoutes(app);

@@ -55,6 +55,6 @@ module.exports = (app) => {
   //put, update promotion with id promoId
   app.put("/promotions/:promoId", (req, res) => {
     const promoId = req.params.promoId;
-    res.end("I will update promotion with id  ", promoId);
+    res.end("I will update promotion with id  " + promoId);
   });
 };

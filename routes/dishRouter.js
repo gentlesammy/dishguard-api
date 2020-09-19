@@ -51,7 +51,6 @@ module.exports = (app) => {
   //put, update  dish with id dishId
   app.put("/dishes/:dishId", (req, res) => {
     const dishId = req.params.dishId;
-    console.log(dishId);
-    res.end("I will update dish with id  ", dishId);
+    res.end("I will update dish with id  " + dishId);
   });
 };
