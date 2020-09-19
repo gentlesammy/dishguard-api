@@ -31,27 +31,27 @@ module.exports = (app) => {
   /dishes/:dishid
 */
 
-  //get all dish with id, dishid
-  app.get("/dishes/:dishid", (req, res) => {
-    const id = req.params.dishid;
+  //get  dish with id, dishId
+  app.get("/dishes/:dishId", (req, res) => {
+    const id = req.params.dishId;
     res.end("I will send you all details of dish with id of " + id);
   });
 
   //post a dish id  to database
-  app.post("/dishes/:dishid", (req, res) => {
+  app.post("/dishes/:dishId", (req, res) => {
     res.end("post method not allowed for this route");
   });
 
-  //delete, delete all dishes
-  app.delete("/dishes/:dishid", (req, res) => {
-    const id = req.params.dishid;
+  //delete, delete  dish with id dishId
+  app.delete("/dishes/:dishId", (req, res) => {
+    const id = req.params.dishId;
     res.end("I will delete  dish with id " + id);
   });
 
-  //put, update all dishes
-  app.put("/dishes/:dishid", (req, res) => {
-    const dishid = req.params.dishid;
-    console.log(dishid);
-    res.end("I will update dish with id  ", dishid);
+  //put, update  dish with id dishId
+  app.put("/dishes/:dishId", (req, res) => {
+    const dishId = req.params.dishId;
+    console.log(dishId);
+    res.end("I will update dish with id  ", dishId);
   });
 };
