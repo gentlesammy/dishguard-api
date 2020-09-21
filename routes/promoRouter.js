@@ -1,7 +1,10 @@
+const Promotion = require("../model/promotionsModel");
+
 module.exports = (app) => {
   //get all promotions
-  app.get("/promotions", (req, res) => {
-    res.end("I will send you all promotions");
+  app.get("/promotions", async (req, res) => {
+    const promos = await Promotion.find();
+    res.send({ promos });
   });
 
   //post promotions to database
