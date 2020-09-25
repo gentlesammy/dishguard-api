@@ -1,22 +1,7 @@
-const Promotion = require("../model/promotionsModel");
-
 module.exports = (app) => {
   //get all promotions
-  app.get("/promotions", async (req, res) => {
-    try {
-      const promotions = await Promotion.find({});
-      res.setHeader("Content-Type", "application/json");
-      res.status(200).json({
-        status: "success",
-        data: promotions,
-      });
-    } catch (error) {
-      res.setHeader("Content-Type", "application/json");
-      res.status(401).json({
-        status: "error",
-        data: [error.message],
-      });
-    }
+  app.get("/promotions", (req, res) => {
+    res.end("I will send you all promotions");
   });
 
   //post promotions to database
