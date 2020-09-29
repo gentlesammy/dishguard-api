@@ -1,34 +1,72 @@
+const Leader = require("../model/leadersModel");
+
 module.exports = (app) => {
   //get all leaders
-  app.get("/leaders", (req, res) => {
-    res.end("I will send you list of all leaders");
+  app.get("/leaders", async (req, res) => {
+    try {
+      const leaders = await Leader.find({});
+      res.setHeader("Content-Type", "application/json");
+      res.status(200).json({
+        status: "success",
+        data: leaders,
+      });
+    } catch (error) {
+      res.setHeader("Content-Type", "application/json");
+      res.status(403).json({
+        status: "error",
+        error: error,
+      });
+    }
   });
 
   //post a leader detail to database
-  app.post("/leaders", (req, res) => {
-    if (req.body.leaderName && req.body.leaderAbout) {
-      res.end(
-        "I will save leader details to database " +
-          " " +
-          req.body.leaderName +
-          "  " +
-          req.body.leaderAbout
-      );
-    } else {
-      res.end(
-        "I need details of leader to save in db, send  leaderName and leaderAbout"
-      );
+  app.post("/leaders", async (req, res) => {
+    try {
+      const addNewLeader = await Leader.create(req.body);
+      if (addNewLeader) {
+        res.setHeader("Content-Type", "application/json");
+        res.status(201).json({
+          status: "success",
+          data: addNewLeader,
+        });
+      }
+    } catch (error) {
+      res.setHeader("Content-Type", "application/json");
+      res.status(403).json({
+        status: "error",
+        error: error,
+      });
+      console.log(error);
     }
   });
 
   //delete, delete all leaders
-  app.delete("/leaders", (req, res) => {
-    res.end("I will delete  all leaders");
+  app.delete("/leaders", async (req, res) => {
+    try {
+      const deleteall = await Leader.deleteMany();
+      if (deleteall) {
+        res.setHeader("Content-Type", "application/json");
+        res.status(200).json({
+          status: "success",
+          data: { message: "all Leaders deleted" },
+        });
+      }
+    } catch (error) {
+      res.setHeader("Content-Type", "application/json");
+      res.status(403).json({
+        status: "error",
+        error: error,
+      });
+    }
   });
 
   //put, update all leaders
-  app.put("/leaders", (req, res) => {
-    res.end("I will update  all leaders");
+  app.put("/leaders", async (req, res) => {
+    res.setHeader("Content-Type", "application/json");
+    res.status(403).json({
+      status: "error",
+      error: { message: "Put request not allowed for this route" },
+    });
   });
 
   /*
@@ -36,25 +74,118 @@ module.exports = (app) => {
   */
 
   //get  leader with id, leaderId
-  app.get("/leaders/:leaderId", (req, res) => {
-    const id = req.params.leaderId;
-    res.end("I will send you all details of leader with id of " + id);
+  app.get("/leaders/:leaderId", async (req, res) => {
+    try {
+      const leaderId = req.params.leaderId;
+      const leader = await Leader.findById(leaderId);
+      if (leader != null) {
+        res.setHeader("Content-Type", "application/json");
+        res.status(200).json({
+          status: "success",
+          data: leader,
+        });
+      } else {
+        res.setHeader("Content-Type", "application/json");
+        res.status(404).json({
+          status: "error",
+          error: {
+            message: "We cannot locate the leader you requested for",
+          },
+        });
+      }
+    } catch (error) {
+      res.setHeader("Content-Type", "application/json");
+      res.status(403).json({
+        status: "error",
+        error: {
+          message: "There is an error",
+          error: error,
+        },
+      });
+    }
   });
 
   //post a leader id  to database
-  app.post("/leaders/:leaderId", (req, res) => {
-    res.end("post method not allowed for this route");
+  app.post("/leaders/:leaderId", async (req, res) => {
+    res.setHeader("Content-Type", "application/json");
+    res.status(403).json({
+      status: "error",
+      error: {
+        message: "Post not allowed for this route",
+      },
+    });
   });
 
   //delete, delete  leader with id leaderId
-  app.delete("/leaders/:leaderId", (req, res) => {
-    const id = req.params.leaderId;
-    res.end("I will delete  leader with id " + id);
+  app.delete("/leaders/:leaderId", async (req, res) => {
+    try {
+      const leaderId = req.params.leaderId;
+      const leader = await Leader.findById(leaderId);
+      if (leader != null) {
+        await Leader.findByIdAndDelete(leaderId);
+        res.setHeader("Content-Type", "application/json");
+        res.status(200).json({
+          status: "success",
+          data: { message: "leader deleted" },
+        });
+      } else {
+        res.setHeader("Content-Type", "application/json");
+        res.status(404).json({
+          status: "error",
+          error: {
+            message: "We cannot locate the Leader you want to delete",
+          },
+        });
+      }
+    } catch (error) {
+      res.setHeader("Content-Type", "application/json");
+      res.status(403).json({
+        status: "error",
+        error: {
+          message: "something is wrong",
+          error: error,
+        },
+      });
+    }
   });
 
   //put, update  leader with id leaderId
-  app.put("/leaders/:leaderId", (req, res) => {
-    const leaderId = req.params.leaderId;
-    res.end("I will update dish with id  " + leaderId);
+  app.put("/leaders/:leaderId", async (req, res) => {
+    try {
+      const leaderId = req.params.leaderId;
+      const leader = await Leader.findById(leaderId);
+      if (leader != null) {
+        const updatedLeader = await Leader.findByIdAndUpdate(
+          leaderId,
+          req.body
+        );
+        if (updatedLeader) {
+          const leadern = await Leader.findById(leaderId);
+          res.setHeader("Content-Type", "application/json");
+          res.status(200).json({
+            status: "success",
+            data: leadern,
+          });
+        }
+      } else {
+        res.setHeader("Content-Type", "application/json");
+        res.status(404).json({
+          status: "error",
+          error: {
+            message: "We cannot locate the Leader you want to Update",
+          },
+        });
+      }
+    } catch (error) {
+      res.setHeader("Content-Type", "application/json");
+      res.status(403).json({
+        status: "error",
+        error: {
+          message: "something is wrong",
+          error: error,
+        },
+      });
+      console.log(error);
+    }
   });
 };
