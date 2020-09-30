@@ -2,11 +2,17 @@ const express = require("express");
 const morgan = require("morgan");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
+const cookieParser = require("cookie-parser");
+const session = require("express-session");
+const FileStore = require("session-file-store")(session);
+const passport = require("passport");
+const authenticate = require("./authenticate");
 
 //routes import
 const dishRoutes = require("./routes/dishRouter");
 const promoRoutes = require("./routes/promoRouter");
 const leaderRoutes = require("./routes/leaderRouter");
+const usersRoutes = require("./routes/usersRouter");
 const app = express();
 
 const dbString = "mongodb://localhost:27017/dishes";
@@ -26,38 +32,42 @@ app.listen(9000, () => {
   console.log("connected");
 });
 app.use(bodyParser.json());
+
 app.use(morgan("dev"));
+app.use(cookieParser("refj2872653gdnqiuu736uqop;['27u3t"));
+
+app.use(
+  session({
+    name: "session-id",
+    secret: "324-736535-hjdhdfg-53twj82-63tehjdkwgt5236",
+    saveUninitialized: false,
+    resave: false,
+    store: new FileStore(),
+  })
+);
+app.use(passport.initialize());
+app.use(passport.session(authenticate));
+usersRoutes(app);
 const auth = (req, res, next) => {
-  console.log(req.headers);
-  const authHeader = req.headers.authorization;
-  if (!authHeader) {
+  if (!req.user) {
     res.setHeader("Content-Type", "application/json");
-    res.status(401).json({
+    res.status(301).json({
       status: "error",
-      data: { message: "Unauthorized action" },
+      error: {
+        message: "You are not authenticated idiot",
+      },
     });
-  }
-  var auth = new Buffer.from(authHeader.split(" ")[1], "base64")
-    .toString()
-    .split(":");
-  let username = auth[0];
-  let password = auth[1];
-  if (username == "admin" && password == "password") {
-    next();
   } else {
-    res.setHeader("Content-Type", "application/json");
-    res.status(401).json({
-      status: "error",
-      data: { message: "Invalid credentials" },
-    });
+    next();
   }
 };
-app.use(auth);
+
 app.use(express.static(__dirname + "/public"));
+
 /*
   #####ROUTES ##############
 */
-//dishes Routes
+app.use(auth);
 dishRoutes(app);
 promoRoutes(app);
 leaderRoutes(app);
