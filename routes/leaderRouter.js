@@ -1,5 +1,5 @@
 const Leader = require("../model/leadersModel");
-
+const authenticate = require("../authenticate");
 module.exports = (app) => {
   //get all leaders
   app.get("/leaders", async (req, res) => {
@@ -20,7 +20,7 @@ module.exports = (app) => {
   });
 
   //post a leader detail to database
-  app.post("/leaders", async (req, res) => {
+  app.post("/leaders", authenticate.verifyUser, async (req, res) => {
     try {
       const addNewLeader = await Leader.create(req.body);
       if (addNewLeader) {
@@ -41,7 +41,7 @@ module.exports = (app) => {
   });
 
   //delete, delete all leaders
-  app.delete("/leaders", async (req, res) => {
+  app.delete("/leaders", authenticate.verifyUser, async (req, res) => {
     try {
       const deleteall = await Leader.deleteMany();
       if (deleteall) {
@@ -61,7 +61,7 @@ module.exports = (app) => {
   });
 
   //put, update all leaders
-  app.put("/leaders", async (req, res) => {
+  app.put("/leaders", authenticate.verifyUser, async (req, res) => {
     res.setHeader("Content-Type", "application/json");
     res.status(403).json({
       status: "error",
@@ -106,7 +106,7 @@ module.exports = (app) => {
   });
 
   //post a leader id  to database
-  app.post("/leaders/:leaderId", async (req, res) => {
+  app.post("/leaders/:leaderId", authenticate.verifyUser, async (req, res) => {
     res.setHeader("Content-Type", "application/json");
     res.status(403).json({
       status: "error",
@@ -117,40 +117,44 @@ module.exports = (app) => {
   });
 
   //delete, delete  leader with id leaderId
-  app.delete("/leaders/:leaderId", async (req, res) => {
-    try {
-      const leaderId = req.params.leaderId;
-      const leader = await Leader.findById(leaderId);
-      if (leader != null) {
-        await Leader.findByIdAndDelete(leaderId);
+  app.delete(
+    "/leaders/:leaderId",
+    authenticate.verifyUser,
+    async (req, res) => {
+      try {
+        const leaderId = req.params.leaderId;
+        const leader = await Leader.findById(leaderId);
+        if (leader != null) {
+          await Leader.findByIdAndDelete(leaderId);
+          res.setHeader("Content-Type", "application/json");
+          res.status(200).json({
+            status: "success",
+            data: { message: "leader deleted" },
+          });
+        } else {
+          res.setHeader("Content-Type", "application/json");
+          res.status(404).json({
+            status: "error",
+            error: {
+              message: "We cannot locate the Leader you want to delete",
+            },
+          });
+        }
+      } catch (error) {
         res.setHeader("Content-Type", "application/json");
-        res.status(200).json({
-          status: "success",
-          data: { message: "leader deleted" },
-        });
-      } else {
-        res.setHeader("Content-Type", "application/json");
-        res.status(404).json({
+        res.status(403).json({
           status: "error",
           error: {
-            message: "We cannot locate the Leader you want to delete",
+            message: "something is wrong",
+            error: error,
           },
         });
       }
-    } catch (error) {
-      res.setHeader("Content-Type", "application/json");
-      res.status(403).json({
-        status: "error",
-        error: {
-          message: "something is wrong",
-          error: error,
-        },
-      });
     }
-  });
+  );
 
   //put, update  leader with id leaderId
-  app.put("/leaders/:leaderId", async (req, res) => {
+  app.put("/leaders/:leaderId", authenticate.verifyUser, async (req, res) => {
     try {
       const leaderId = req.params.leaderId;
       const leader = await Leader.findById(leaderId);

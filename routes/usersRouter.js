@@ -1,6 +1,6 @@
 const User = require("../model/userModel");
 const passport = require("passport");
-
+const authenticate = require("../authenticate");
 module.exports = (app) => {
   //get all users listing
   app.get("/users", async (req, res) => {
@@ -36,10 +36,11 @@ module.exports = (app) => {
 
   //login user
   app.post("/user/login", passport.authenticate("local"), (req, res, next) => {
+    const token = authenticate.getToken({ _id: req.user._id });
     res.setHeader("Content-Type", "application/json");
     res.status(200).json({
       status: "success",
-      data: { message: "You are successfully logged in" },
+      data: { message: "You are successfully logged in", token: token },
     });
   });
   /* end */

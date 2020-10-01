@@ -7,6 +7,8 @@ const session = require("express-session");
 const FileStore = require("session-file-store")(session);
 const passport = require("passport");
 const authenticate = require("./authenticate");
+const config = require("./config/config");
+const path = require("path");
 
 //routes import
 const dishRoutes = require("./routes/dishRouter");
@@ -15,7 +17,7 @@ const leaderRoutes = require("./routes/leaderRouter");
 const usersRoutes = require("./routes/usersRouter");
 const app = express();
 
-const dbString = "mongodb://localhost:27017/dishes";
+const dbString = config.mongoDbUrl;
 mongoose.connect(
   dbString,
   {
@@ -36,38 +38,13 @@ app.use(bodyParser.json());
 app.use(morgan("dev"));
 app.use(cookieParser("refj2872653gdnqiuu736uqop;['27u3t"));
 
-app.use(
-  session({
-    name: "session-id",
-    secret: "324-736535-hjdhdfg-53twj82-63tehjdkwgt5236",
-    saveUninitialized: false,
-    resave: false,
-    store: new FileStore(),
-  })
-);
 app.use(passport.initialize());
-app.use(passport.session(authenticate));
-usersRoutes(app);
-const auth = (req, res, next) => {
-  if (!req.user) {
-    res.setHeader("Content-Type", "application/json");
-    res.status(301).json({
-      status: "error",
-      error: {
-        message: "You are not authenticated idiot",
-      },
-    });
-  } else {
-    next();
-  }
-};
-
-app.use(express.static(__dirname + "/public"));
+app.use(express.static(path.join(__dirname + "/public")));
 
 /*
   #####ROUTES ##############
 */
-app.use(auth);
+usersRoutes(app);
 dishRoutes(app);
 promoRoutes(app);
 leaderRoutes(app);

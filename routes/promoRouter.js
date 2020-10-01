@@ -1,5 +1,5 @@
 const Promotion = require("../model/promotionsModel");
-
+const authenticate = require("../authenticate");
 module.exports = (app) => {
   //get all promotions
   app.get("/promotions", async (req, res) => {
@@ -20,7 +20,7 @@ module.exports = (app) => {
   });
 
   //post promotions to database
-  app.post("/promotions", async (req, res) => {
+  app.post("/promotions", authenticate.verifyUser, async (req, res) => {
     try {
       const addNewPromo = await Promotion.create(req.body);
       if (addNewPromo) {
@@ -41,7 +41,7 @@ module.exports = (app) => {
   });
 
   //delete, delete all promotions
-  app.delete("/promotions", async (req, res) => {
+  app.delete("/promotions", authenticate.verifyUser, async (req, res) => {
     try {
       const deleteall = await Promotion.deleteMany();
       if (deleteall) {
@@ -61,7 +61,7 @@ module.exports = (app) => {
   });
 
   //put, update all promotions
-  app.put("/promotions", (req, res) => {
+  app.put("/promotions", authenticate.verifyUser, (req, res) => {
     res.setHeader("Content-Type", "application/json");
     res.status(403).json({
       status: "error",
@@ -106,7 +106,7 @@ module.exports = (app) => {
   });
 
   //post a promotion with id  to database
-  app.post("/promotions/:promoId", (req, res) => {
+  app.post("/promotions/:promoId", authenticate.verifyUser, (req, res) => {
     res.setHeader("Content-Type", "application/json");
     res.status(403).json({
       status: "error",
@@ -117,40 +117,44 @@ module.exports = (app) => {
   });
 
   //delete, delete the promotion with id promoId
-  app.delete("/promotions/:promoId", async (req, res) => {
-    try {
-      const promoId = req.params.promoId;
-      const promo = await Promotion.findById(promoId);
-      if (promo != null) {
-        await Promotion.findByIdAndDelete(promoId);
+  app.delete(
+    "/promotions/:promoId",
+    authenticate.verifyUser,
+    async (req, res) => {
+      try {
+        const promoId = req.params.promoId;
+        const promo = await Promotion.findById(promoId);
+        if (promo != null) {
+          await Promotion.findByIdAndDelete(promoId);
+          res.setHeader("Content-Type", "application/json");
+          res.status(200).json({
+            status: "success",
+            data: { message: "promo deleted" },
+          });
+        } else {
+          res.setHeader("Content-Type", "application/json");
+          res.status(404).json({
+            status: "error",
+            error: {
+              message: "We cannot locate the promotion you want to delete",
+            },
+          });
+        }
+      } catch (error) {
         res.setHeader("Content-Type", "application/json");
-        res.status(200).json({
-          status: "success",
-          data: { message: "promo deleted" },
-        });
-      } else {
-        res.setHeader("Content-Type", "application/json");
-        res.status(404).json({
+        res.status(403).json({
           status: "error",
           error: {
-            message: "We cannot locate the promotion you want to delete",
+            message: "something is wrong",
+            error: error,
           },
         });
       }
-    } catch (error) {
-      res.setHeader("Content-Type", "application/json");
-      res.status(403).json({
-        status: "error",
-        error: {
-          message: "something is wrong",
-          error: error,
-        },
-      });
     }
-  });
+  );
 
   //put, update promotion with id promoId
-  app.put("/promotions/:promoId", async (req, res) => {
+  app.put("/promotions/:promoId", authenticate.verifyUser, async (req, res) => {
     try {
       const promoId = req.params.promoId;
       const promo = await Promotion.findById(promoId);

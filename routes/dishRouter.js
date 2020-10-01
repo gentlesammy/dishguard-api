@@ -1,4 +1,5 @@
 const Dish = require("../model/dishesModel");
+const authenticate = require("../authenticate");
 
 module.exports = (app) => {
   //get all dishes
@@ -21,7 +22,7 @@ module.exports = (app) => {
   });
 
   //post a dish detail to database
-  app.post("/dishes", async (req, res) => {
+  app.post("/dishes", authenticate.verifyUser, async (req, res) => {
     try {
       const createDish = await Dish.create(req.body);
       if (createDish) {
@@ -41,7 +42,7 @@ module.exports = (app) => {
   });
 
   //delete, delete all dishes
-  app.delete("/dishes", async (req, res) => {
+  app.delete("/dishes", authenticate.verifyUser, async (req, res) => {
     try {
       const dishesRemoved = await Dish.remove({});
       if (dishesRemoved) {
@@ -57,7 +58,7 @@ module.exports = (app) => {
   });
 
   //put, update all dishes
-  app.put("/dishes", (req, res) => {
+  app.put("/dishes", authenticate.verifyUser, (req, res) => {
     res.setHeader("Content-Type", "application/json");
     res.status(403).json({
       status: "error",
@@ -89,7 +90,7 @@ module.exports = (app) => {
   });
 
   //post a dish id  to database
-  app.post("/dishes/:dishId", (req, res) => {
+  app.post("/dishes/:dishId", authenticate.verifyUser, (req, res) => {
     res.setHeader("Content-Type", "application/json");
     res.status(403).json({
       status: "error",
@@ -98,7 +99,7 @@ module.exports = (app) => {
   });
 
   //delete, delete  dish with id dishId
-  app.delete("/dishes/:dishId", async (req, res) => {
+  app.delete("/dishes/:dishId", authenticate.verifyUser, async (req, res) => {
     try {
       const id = req.params.dishId;
       const deleteddish = await Dish.findByIdAndDelete(id);
@@ -115,7 +116,7 @@ module.exports = (app) => {
   });
 
   //put, update  dish with id dishId
-  app.put("/dishes/:dishId", async (req, res) => {
+  app.put("/dishes/:dishId", authenticate.verifyUser, async (req, res) => {
     try {
       const dishId = req.params.dishId;
       const updatedDish = await Dish.findByIdAndUpdate(
