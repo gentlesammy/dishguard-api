@@ -51,4 +51,8 @@ exports.verifyAdmin = (req, res, next) => {
   }
 };
 
+// exports.verifyOwnerShip = (res, req, next, ) => {
+
+// }
+
 exports.verifyUser = passport.authenticate("jwt", { session: false });

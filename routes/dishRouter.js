@@ -24,50 +24,65 @@ module.exports = (app) => {
   });
 
   //post a dish detail to database
-  app.post("/dishes", authenticate.verifyUser, async (req, res) => {
-    try {
-      req.body.author = req.user._id;
-      const createDish = await Dish.create(req.body);
-      if (createDish) {
+  app.post(
+    "/dishes",
+    authenticate.verifyUser,
+    authenticate.verifyAdmin,
+    async (req, res) => {
+      try {
+        req.body.author = req.user._id;
+        const createDish = await Dish.create(req.body);
+        if (createDish) {
+          res.setHeader("Content-Type", "application/json");
+          res.status(200).json({
+            status: "success",
+            data: createDish,
+          });
+        }
+      } catch (error) {
         res.setHeader("Content-Type", "application/json");
-        res.status(200).json({
-          status: "success",
-          data: createDish,
+        res.status(401).json({
+          status: "error",
+          data: [error.message],
         });
       }
-    } catch (error) {
-      res.setHeader("Content-Type", "application/json");
-      res.status(401).json({
-        status: "error",
-        data: [error.message],
-      });
     }
-  });
+  );
 
   //delete, delete all dishes
-  app.delete("/dishes", authenticate.verifyUser, async (req, res) => {
-    try {
-      const dishesRemoved = await Dish.remove({});
-      if (dishesRemoved) {
-        res.setHeader("Content-Type", "application/json");
-        res.status(200).json({
-          status: "success",
-          data: { message: "All dishes removed" },
-        });
+  app.delete(
+    "/dishes",
+    authenticate.verifyUser,
+    authenticate.verifyAdmin,
+    async (req, res) => {
+      try {
+        const dishesRemoved = await Dish.remove({});
+        if (dishesRemoved) {
+          res.setHeader("Content-Type", "application/json");
+          res.status(200).json({
+            status: "success",
+            data: { message: "All dishes removed" },
+          });
+        }
+      } catch (error) {
+        console.log(error);
       }
-    } catch (error) {
-      console.log(error);
     }
-  });
+  );
 
   //put, update all dishes
-  app.put("/dishes", authenticate.verifyUser, (req, res) => {
-    res.setHeader("Content-Type", "application/json");
-    res.status(403).json({
-      status: "error",
-      data: { message: "Put operation not allowed on this route" },
-    });
-  });
+  app.put(
+    "/dishes",
+    authenticate.verifyUser,
+    authenticate.verifyAdmin,
+    (req, res) => {
+      res.setHeader("Content-Type", "application/json");
+      res.status(403).json({
+        status: "error",
+        data: { message: "Put operation not allowed on this route" },
+      });
+    }
+  );
 
   /*
   /dishes/:dishid
@@ -93,93 +108,105 @@ module.exports = (app) => {
   });
 
   //post a dish id  to database
-  app.post("/dishes/:dishId", authenticate.verifyUser, (req, res) => {
-    res.setHeader("Content-Type", "application/json");
-    res.status(403).json({
-      status: "error",
-      data: { message: "post method not allowed for this route" },
-    });
-  });
+  app.post(
+    "/dishes/:dishId",
+    authenticate.verifyUser,
+    authenticate.verifyAdmin,
+    (req, res) => {
+      res.setHeader("Content-Type", "application/json");
+      res.status(403).json({
+        status: "error",
+        data: { message: "post method not allowed for this route" },
+      });
+    }
+  );
 
   //delete, delete  dish with id dishId
-  app.delete("/dishes/:dishId", authenticate.verifyUser, async (req, res) => {
-    try {
-      const id = req.params.dishId;
-      const deleteddish = await Dish.findByIdAndDelete(id);
-      if (deleteddish) {
-        res.setHeader("Content-Type", "application/json");
-        res.status(200).json({
-          status: "success",
-          data: { message: "dish deleted successfully" },
-        });
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  });
-
-  //put, update  dish with id dishId
-  app.put("/dishes/:dishId", authenticate.verifyUser, async (req, res) => {
-    try {
-      const dishId = req.params.dishId;
-      const updatedDish = await Dish.findByIdAndUpdate(
-        dishId,
-        { $set: req.body },
-        { new: true }
-      );
-      res.setHeader("Content-Type", "application/json");
-      res.status(200).json({
-        status: "success",
-        data: updatedDish,
-      });
-    } catch (error) {
-      console.log(error);
-    }
-  });
-  /*
-//dish comments  routes 
-*/
-  app.get(
-    "/dishes/:dishId/comments",
+  app.delete(
+    "/dishes/:dishId",
     authenticate.verifyUser,
+    authenticate.verifyAdmin,
     async (req, res) => {
       try {
-        const dishId = req.params.dishId;
-        const targetDish = await Dish.findById(dishId).populate(
-          "comments.author"
-        );
-        if (targetDish != null) {
+        const id = req.params.dishId;
+        const deleteddish = await Dish.findByIdAndDelete(id);
+        if (deleteddish) {
           res.setHeader("Content-Type", "application/json");
           res.status(200).json({
             status: "success",
-            data: { data: targetDish.comments },
-          });
-        } else {
-          res.setHeader("Content-Type", "application/json");
-          res.status(400).json({
-            status: "error",
-            data: {
-              message:
-                "we cannot locate the dish whose comment you are looking for",
-            },
+            data: { message: "dish deleted successfully" },
           });
         }
       } catch (error) {
-        res.setHeader("Content-Type", "application/json");
-        res.status(403).json({
-          status: "error",
-          error: {
-            message: "There is an error",
-            error: error,
-          },
-        });
+        console.log(error);
       }
     }
   );
+
+  //put, update  dish with id dishId
+  app.put(
+    "/dishes/:dishId",
+    authenticate.verifyUser,
+    authenticate.verifyAdmin,
+    async (req, res) => {
+      try {
+        const dishId = req.params.dishId;
+        const updatedDish = await Dish.findByIdAndUpdate(
+          dishId,
+          { $set: req.body },
+          { new: true }
+        );
+        res.setHeader("Content-Type", "application/json");
+        res.status(200).json({
+          status: "success",
+          data: updatedDish,
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  );
+  /*
+//dish comments  routes 
+*/
+  app.get("/dishes/:dishId/comments", async (req, res) => {
+    try {
+      const dishId = req.params.dishId;
+      const targetDish = await Dish.findById(dishId).populate(
+        "comments.author"
+      );
+      if (targetDish != null) {
+        res.setHeader("Content-Type", "application/json");
+        res.status(200).json({
+          status: "success",
+          data: { data: targetDish.comments },
+        });
+      } else {
+        res.setHeader("Content-Type", "application/json");
+        res.status(400).json({
+          status: "error",
+          data: {
+            message:
+              "we cannot locate the dish whose comment you are looking for",
+          },
+        });
+      }
+    } catch (error) {
+      res.setHeader("Content-Type", "application/json");
+      res.status(403).json({
+        status: "error",
+        error: {
+          message: "There is an error",
+          error: error,
+        },
+      });
+    }
+  });
   //comment on aa specific dish
   app.post(
     "/dishes/:dishId/comments",
     authenticate.verifyUser,
+    authenticate.verifyAdmin,
     async (req, res) => {
       try {
         const dish = await Dish.findById(req.params.dishId);

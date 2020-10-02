@@ -2,10 +2,22 @@ const User = require("../model/userModel");
 const passport = require("passport");
 const authenticate = require("../authenticate");
 module.exports = (app) => {
-  //get all users listing
-  app.get("/users", async (req, res) => {
-    res.send("list of all users");
-  });
+  //get all users
+  app.get(
+    "/users",
+    authenticate.verifyUser,
+    authenticate.verifyAdmin,
+    async (req, res) => {
+      try {
+        const allUsers = await User.find({}).sort({ createdAt: -1 });
+        res.setHeader("Content-Type", "application/json");
+        res.status(200).json({
+          status: "success",
+          data: allUsers,
+        });
+      } catch (error) {}
+    }
+  );
 
   //sign up user
   app.post("/user/signup", async (req, res, next) => {
