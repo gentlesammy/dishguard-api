@@ -26,6 +26,7 @@ module.exports = (app) => {
   //post a dish detail to database
   app.post("/dishes", authenticate.verifyUser, async (req, res) => {
     try {
+      req.body.author = req.user._id;
       const createDish = await Dish.create(req.body);
       if (createDish) {
         res.setHeader("Content-Type", "application/json");
@@ -225,7 +226,6 @@ module.exports = (app) => {
   /*
 //dish comments:commentId  routes 
 */
-
   //get a specific comment of a specific dish
   app.get("/dishes/:dishId/comments/:commentId", async (req, res) => {
     try {
@@ -261,7 +261,6 @@ module.exports = (app) => {
       });
     }
   });
-
   //modify specific comments of  a specific dish
   app.put(
     "/dishes/:dishId/comments/:commentId",
