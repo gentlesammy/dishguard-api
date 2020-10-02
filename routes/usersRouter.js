@@ -14,13 +14,17 @@ module.exports = (app) => {
         new User({ username: req.body.username }),
         req.body.password
       );
-      passport.authenticate("local")(req, res, () => {
-        res.setHeader("Content-Type", "application/json");
-        res.status(200).json({
-          status: "success",
-          data: { message: "user Created successfully" },
+      if (req.body.firstName) user.firstName = req.body.firstName;
+      if (req.body.lastName) user.lastName = req.body.lastName;
+      const saveUser = await user.save();
+      if (saveUser)
+        passport.authenticate("local")(req, res, () => {
+          res.setHeader("Content-Type", "application/json");
+          res.status(200).json({
+            status: "success",
+            data: { message: "user Created successfully", data: saveUser },
+          });
         });
-      });
     } catch (error) {
       res.setHeader("Content-Type", "application/json");
       console.log(error);

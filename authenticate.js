@@ -34,4 +34,21 @@ exports.jwtPassport = passport.use(
   })
 );
 
+exports.verifyAdmin = (req, res, next) => {
+  const isAdmin = req.user.admin;
+  if (isAdmin) {
+    // user is admin, pass to next
+    next();
+  } else {
+    //throw error, user is not an admin
+    res.setHeader("Content-Type", "application/json");
+    res.status(403).json({
+      status: "error",
+      error: {
+        message: "You are not authorized to access this route",
+      },
+    });
+  }
+};
+
 exports.verifyUser = passport.authenticate("jwt", { session: false });
