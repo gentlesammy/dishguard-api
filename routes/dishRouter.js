@@ -169,6 +169,7 @@ module.exports = (app) => {
   /*
 //dish comments  routes 
 */
+  //get all comments on a specific dish
   app.get("/dishes/:dishId/comments", async (req, res) => {
     try {
       const dishId = req.params.dishId;
@@ -206,7 +207,6 @@ module.exports = (app) => {
   app.post(
     "/dishes/:dishId/comments",
     authenticate.verifyUser,
-    authenticate.verifyAdmin,
     async (req, res) => {
       try {
         const dish = await Dish.findById(req.params.dishId);
@@ -297,7 +297,7 @@ module.exports = (app) => {
         const dishId = req.params.dishId;
         const commentId = req.params.commentId;
         req.body.author = req.user._id;
-        console.log(req.body);
+
         const updatedDishComment = await Dish.findOneAndUpdate(
           { _id: dishId, "comments._id": commentId },
           {
@@ -331,6 +331,8 @@ module.exports = (app) => {
       try {
         const dishId = req.params.dishId;
         const commentId = req.params.commentId;
+        //get the comment and check if author id on coment is == req.user._id
+
         const new_dish = await Dish.findOneAndUpdate(
           { _id: dishId },
           { $pull: { comments: { _id: commentId } } },
@@ -350,6 +352,25 @@ module.exports = (app) => {
         }
       } catch (error) {
         console.log(error);
+      }
+    }
+  );
+
+  app.get(
+    "/dishes/:dishId/comments/:commentId/hey",
+    authenticate.verifyUser,
+    async (req, res) => {
+      try {
+        const dis = await Dish.find({
+          "comments.$id": ObjectId(req.params.commentId),
+        });
+        res.setHeader("Content-Type", "application/json");
+        res.status(200).json({
+          status: "success",
+          data: { data: dis },
+        });
+      } catch (error) {
+        console.log("errorware", error);
       }
     }
   );
