@@ -331,7 +331,8 @@ module.exports = (app) => {
       try {
         const dishId = req.params.dishId;
         const commentId = req.params.commentId;
-        //get the comment and check if author id on coment is == req.user._id
+        //get the comment and check if author id on coment is == req.user._id, if yes delete
+        //else return error message 401
 
         const new_dish = await Dish.findOneAndUpdate(
           { _id: dishId },
