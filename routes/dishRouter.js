@@ -289,33 +289,60 @@ module.exports = (app) => {
     }
   });
   //modify specific comments of  a specific dish
+  //only comment owner can do this.
   app.put(
     "/dishes/:dishId/comments/:commentId",
     authenticate.verifyUser,
     async (req, res) => {
       try {
+        //FIXME: use single code to pull comment of dish out of db
         const dishId = req.params.dishId;
         const commentId = req.params.commentId;
         req.body.author = req.user._id;
-
-        const updatedDishComment = await Dish.findOneAndUpdate(
-          { _id: dishId, "comments._id": commentId },
-          {
-            $set: {
-              "comments.$": req.body,
-            },
-          }
-        );
-        if (updatedDishComment) {
-          const updatedDish_Comment = await Dish.findById(dishId).populate(
-            "comments.author"
-          );
-          if (updatedDish_Comment) {
+        const targetDish = await Dish.findById(dishId);
+        const dishComment = targetDish.comments.id(commentId);
+        //dish  & comment null
+        if (targetDish == null || dishComment == null) {
+          res.setHeader("Content-Type", "application/json");
+          res.status(400).json({
+            status: "error",
+            data: { message: "comment not found" },
+          });
+        } else {
+          // console.log(dishComment.author, req.user._id);
+          if (String(dishComment.author) !== String(req.body.author)) {
+            //Unauthorised attempt
             res.setHeader("Content-Type", "application/json");
-            res.status(200).json({
-              status: "success",
-              data: { message: "comment updated", data: updatedDish_Comment },
+            res.status(403).json({
+              status: "error",
+              data: { message: "You do not own this resources" },
             });
+          } else {
+            //user owned comment so is
+            // console.log(req.body);
+            const updatedDishComment = await Dish.findOneAndUpdate(
+              { _id: dishId, "comments._id": commentId },
+              {
+                $set: {
+                  "comments.$": req.body,
+                },
+              }
+            );
+            if (updatedDishComment) {
+              const updatedDish_Comment = await Dish.findById(dishId).populate(
+                "comments.author"
+              );
+              if (updatedDish_Comment) {
+                res.setHeader("Content-Type", "application/json");
+                res.status(200).json({
+                  status: "success",
+                  data: {
+                    message: "comment updated",
+                    data: updatedDish_Comment,
+                  },
+                });
+              }
+            }
           }
         }
       } catch (error) {
@@ -333,22 +360,41 @@ module.exports = (app) => {
         const commentId = req.params.commentId;
         //get the comment and check if author id on coment is == req.user._id, if yes delete
         //else return error message 401
-
-        const new_dish = await Dish.findOneAndUpdate(
-          { _id: dishId },
-          { $pull: { comments: { _id: commentId } } },
-          { new: true }
-        );
-        if (new_dish != null) {
-          const getUpdateddish = await Dish.findById(dishId).populate(
-            "comments.author"
-          );
-          if (getUpdateddish != null) {
+        const targetDish = await Dish.findById(dishId);
+        const dishComment = targetDish.comments.id(commentId);
+        //dish  & comment null
+        if (targetDish == null || dishComment == null) {
+          res.setHeader("Content-Type", "application/json");
+          res.status(400).json({
+            status: "error",
+            data: { message: "comment not found" },
+          });
+        } else {
+          if (String(dishComment.author) !== String(req.user)) {
+            //Unauthorised attempt
             res.setHeader("Content-Type", "application/json");
-            res.status(200).json({
-              status: "success",
-              data: { message: "comment deleted", data: getUpdateddish },
+            res.status(403).json({
+              status: "error",
+              data: { message: "You do not own this resources" },
             });
+          } else {
+            const new_dish = await Dish.findOneAndUpdate(
+              { _id: dishId },
+              { $pull: { comments: { _id: commentId } } },
+              { new: true }
+            );
+            if (new_dish != null) {
+              const getUpdateddish = await Dish.findById(dishId).populate(
+                "comments.author"
+              );
+              if (getUpdateddish != null) {
+                res.setHeader("Content-Type", "application/json");
+                res.status(200).json({
+                  status: "success",
+                  data: { message: "comment deleted", data: getUpdateddish },
+                });
+              }
+            }
           }
         }
       } catch (error) {
