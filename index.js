@@ -9,6 +9,8 @@ const passport = require("passport");
 const authenticate = require("./authenticate");
 const config = require("./config/config");
 const path = require("path");
+const https = require("https");
+const fs = require("fs");
 
 //routes import
 const dishRoutes = require("./routes/dishRouter");
@@ -31,7 +33,19 @@ mongoose.connect(
   }
 );
 const port = 9000;
-app.listen(9000, () => {
+
+const sslServer = https.createServer(
+  {
+    key: fs.readFileSync(
+      path.join(__dirname, "cert", "25926554_httplocalhost9000.key")
+    ),
+    cert: fs.readFileSync(
+      path.join(__dirname, "cert", "25926554_httplocalhost9000.cert")
+    ),
+  },
+  app
+);
+sslServer.listen(9000, () => {
   console.log("connected");
 });
 app.use(bodyParser.json());
