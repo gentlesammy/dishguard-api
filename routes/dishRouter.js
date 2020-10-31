@@ -1,10 +1,10 @@
 const Dish = require("../model/dishesModel");
 const authenticate = require("../authenticate");
 const { findById } = require("../model/dishesModel");
-
+const cors = require("./cors");
 module.exports = (app) => {
   //get all dishes
-  app.get("/dishes", async (req, res) => {
+  app.get("/dishes", cors.cors, async (req, res) => {
     try {
       const dishes = await Dish.find({}).populate("comments.author");
       res.setHeader("Content-Type", "application/json");
@@ -26,6 +26,7 @@ module.exports = (app) => {
   //post a dish detail to database
   app.post(
     "/dishes",
+    cors.corsWithOptions,
     authenticate.verifyUser,
     authenticate.verifyAdmin,
     async (req, res) => {
@@ -52,6 +53,7 @@ module.exports = (app) => {
   //delete, delete all dishes
   app.delete(
     "/dishes",
+    cors.corsWithOptions,
     authenticate.verifyUser,
     authenticate.verifyAdmin,
     async (req, res) => {
@@ -73,6 +75,7 @@ module.exports = (app) => {
   //put, update all dishes
   app.put(
     "/dishes",
+    cors.corsWithOptions,
     authenticate.verifyUser,
     authenticate.verifyAdmin,
     (req, res) => {
@@ -89,7 +92,7 @@ module.exports = (app) => {
 */
 
   //get  dish with id, dishId
-  app.get("/dishes/:dishId", async (req, res) => {
+  app.get("/dishes/:dishId", cors.cors, async (req, res) => {
     try {
       const id = req.params.dishId;
       const dish = await Dish.findById(id).populate("comments.author");
@@ -124,6 +127,7 @@ module.exports = (app) => {
   //delete, delete  dish with id dishId
   app.delete(
     "/dishes/:dishId",
+    cors.corsWithOptions,
     authenticate.verifyUser,
     authenticate.verifyAdmin,
     async (req, res) => {
@@ -146,6 +150,7 @@ module.exports = (app) => {
   //put, update  dish with id dishId
   app.put(
     "/dishes/:dishId",
+    cors.corsWithOptions,
     authenticate.verifyUser,
     authenticate.verifyAdmin,
     async (req, res) => {
